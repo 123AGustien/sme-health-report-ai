@@ -1,7 +1,10 @@
+import os
 from openai import OpenAI
 
-client = OpenAI(api_key="YOUR_API_KEY")
-
+# Load API key securely from environment variable
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
 def generate_insights(df):
     """
@@ -15,6 +18,7 @@ def generate_insights(df):
     You are an SME financial advisor.
 
     Analyze this business transaction data and provide:
+
     1. Cashflow observations
     2. Risks
     3. Recommendations
