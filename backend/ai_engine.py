@@ -1,26 +1,39 @@
+from openai import OpenAI
+
+client = OpenAI(api_key="YOUR_API_KEY")
+
+
 def generate_insights(df):
     """
-    Simple SME business insights engine (MVP version)
+    Uses GPT to generate SME business insights
     """
 
-    insights = []
+    # Convert first rows into readable text
+    data_preview = df.head(10).to_string()
 
-    # 1. Basic size check
-    if len(df) > 50:
-        insights.append("High transaction volume detected")
+    prompt = f"""
+    You are an SME financial advisor.
 
-    # 2. Look for amount column
-    if "amount" in df.columns:
-        avg = df["amount"].mean()
-        insights.append(f"Average transaction value: {round(avg, 2)}")
+    Analyze this business transaction data and provide:
+    1. Cashflow observations
+    2. Risks
+    3. Recommendations
+    4. Weekly business health summary
 
-    # 3. Cashflow warning logic (simple rule)
-    if "amount" in df.columns:
-        total = df["amount"].sum()
-        if total < 0:
-            insights.append("Warning: Negative cashflow detected")
+    Data:
+    {data_preview}
+    """
 
-    # 4. Default advisory
-    insights.append("Recommendation: Monitor weekly cashflow and overdue invoices")
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+
+    insights = response.choices[0].message.content
 
     return insights
