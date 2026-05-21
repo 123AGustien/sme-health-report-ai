@@ -29,3 +29,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python backend/engine.py "${{ github.event.inputs.file }}"
+
+- name: Upload Report (Downloadable Output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sme-business-report
+          path: report.json
