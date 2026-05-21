@@ -1,24 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SME AI SaaS Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+        }
+
+        button {
+            padding: 12px;
+            width: 100%;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        pre {
+            background: #111;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>📊 SME AI SaaS Dashboard</h1>
+    <p>Upload CSV or enter business data for AI-powered health analysis</p>
+</div>
+
+<div class="card">
+    <h3>📁 Upload Financial CSV</h3>
+    <input type="file" id="fileInput">
+</div>
+
+<div class="card">
+    <h3>🏢 Business Quick Input</h3>
+
+    <input id="name" placeholder="Business Name">
+    <input id="revenue" type="number" placeholder="Monthly Revenue">
+    <input id="expense" type="number" placeholder="Monthly Expenses">
+</div>
+
+<div class="card">
+    <button onclick="runAnalysis()">🚀 Run AI Analysis</button>
+</div>
+
+<div class="card">
+    <h3>📊 Result Output</h3>
+    <pre id="output">Waiting for analysis...</pre>
+</div>
+
+<div class="card">
+    <h3>📩 Full Report / Billing</h3>
+    <p>For enterprise AI report and full SaaS access:</p>
+
+    <button onclick="window.location.href='mailto:donweerasekera@gmail.com?subject=SME%20AI%20Full%20Report%20Request'">
+        Contact for Billing
+    </button>
+</div>
+
 <script>
-async function uploadFile() {
+function runAnalysis() {
 
     const file = document.getElementById('fileInput').files[0];
 
-    if (!file) {
-        alert("Please upload a file first");
-        return;
-    }
+    const name = document.getElementById('name').value;
+    const revenue = Number(document.getElementById('revenue').value);
+    const expense = Number(document.getElementById('expense').value);
 
-    document.getElementById('output').innerText = "Processing via Sextant Engine...";
+    let net = revenue - expense;
 
-    // Simulated SaaS output (FREE MODE)
+    let risk = "LOW";
+    if (net < 0) risk = "HIGH";
+    else if (expense > revenue * 0.7) risk = "MEDIUM";
+
     const result = {
-        status: "uploaded",
-        file_name: file.name,
-        message: "Send to GitHub Actions engine (next step)",
-        next_step: "Connect workflow trigger"
+        business: name || "Unknown",
+        net_cashflow: net,
+        risk_level: risk,
+        file_uploaded: file ? file.name : "No file",
+        engine: "Sextant AI Engine (MVP Mode)",
+        status: "processed successfully"
     };
 
     document.getElementById('output').innerText =
         JSON.stringify(result, null, 2);
 }
 </script>
+
+</body>
+</html>
