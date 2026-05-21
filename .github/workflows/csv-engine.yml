@@ -3,11 +3,13 @@ name: Sextant CSV Engine
 on:
   workflow_dispatch:
     inputs:
-      filename:
+      file:
+        description: "CSV file name in repo"
         required: true
+        default: sample.csv
 
 jobs:
-  analyze:
+  run-engine:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,45 +21,22 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Run CSV Engine
+      # ✅ FIX: install dependencies BEFORE running Python
+      - name: Install dependencies
         run: |
-          python - <<EOF
-          import pandas as pd
-          import json
+          python -m pip install --upgrade pip
+          pip install pandas
 
-          file = "${{ github.event.inputs.filename }}"
+      - name: Run Engine
+        run: |
+          python backend/ai_engine.py "${{ github.event.inputs.file }}"
 
-          df = pd.read_csv(file)
-
-          revenue = df["revenue"].sum() if "revenue" in df.columns else 0
-          expense = df["expense"].sum() if "expense" in df.columns else 0
-
-          net = revenue - expense
-
-          risk = "LOW"
-          if net < 0:
-              risk = "HIGH"
-          elif expense > revenue * 0.7:
-              risk = "MEDIUM"
-
-          report = {
-              "rows": len(df),
-              "total_revenue": float(revenue),
-              "total_expense": float(expense),
-              "net_cashflow": float(net),
-              "risk_level": risk,
-              "status": "processed via GitHub Actions"
-          }
-
-          # SAVE REPORT FILE (IMPORTANT)
-          with open("report.json", "w") as f:
-              json.dump(report, f, indent=2)
-
-          print(json.dumps(report, indent=2))
-          EOF
+      - name: Check output files
+        run: |
+          ls -R
 
       - name: Upload Report
         uses: actions/upload-artifact@v4
         with:
-          name: sextant-report
+          name: sme-business-report
           path: report.json
