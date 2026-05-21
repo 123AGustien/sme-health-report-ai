@@ -1,58 +1,40 @@
-from flask import Flask, jsonify, request
+from fastapi import FastAPI, UploadFile, File
+import pandas as pd
+
 from backend.parser import parse_csv
 from backend.ai_engine import analyze_finances
 from backend.report_generator import generate_report
 
-app = Flask(__name__)
-
-app.secret_key = "sme-ai-v4-secret"
+app = FastAPI(title="SME AI SaaS v4 (FastAPI)")
 
 # =========================
 # HEALTH CHECK
 # =========================
-@app.route("/")
+@app.get("/")
 def home():
     return {
-        "status": "SME AI SaaS v4 LIVE",
-        "message": "Upload CSV to /upload for full analysis"
+        "status": "SME AI FastAPI running",
+        "version": "v4"
     }
 
 # =========================
-# FULL SAAS PIPELINE
+# UPLOAD CSV + FULL PIPELINE
 # =========================
-@app.route("/upload", methods=["POST"])
-def upload():
-    try:
-        file = request.files.get("file")
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
 
-        if not file:
-            return jsonify({"error": "No file uploaded"}), 400
+    # 1. LOAD CSV
+    df = parse_csv(file.file)
 
-        # 1. PARSE
-        df = parse_csv(file)
+    # 2. AI ANALYSIS
+    ai_result = analyze_finances(df)
 
-        # 2. AI ANALYSIS
-        ai_result = analyze_finances(df)
+    # 3. REPORT GENERATION
+    report = generate_report(ai_result, df)
 
-        # 3. REPORT GENERATION
-        report = generate_report(ai_result, df)
-
-        # FINAL OUTPUT (SAAS RESPONSE)
-        return jsonify({
-            "status": "success",
-            "ai_result": ai_result,
-            "report": report
-        })
-
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
-
-
-# =========================
-# RUN APP
-# =========================
-if __name__ == "__main__":
-    app.run(debug=True)
+    # FINAL RESPONSE
+    return {
+        "status": "success",
+        "ai_result": ai_result,
+        "report": report
+    }
