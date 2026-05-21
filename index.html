@@ -1,17 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>SME AI SaaS Dashboard</title>
-
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: auto;
+            font-family: Arial;
             padding: 20px;
-            background: #f7f7f7;
+            background: #f5f5f5;
         }
 
         .card {
@@ -19,45 +14,36 @@
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
         }
 
         button {
-            padding: 12px;
-            width: 100%;
-            background: #007bff;
+            padding: 10px 15px;
+            cursor: pointer;
+            background: black;
             color: white;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
         }
 
-        button:hover {
-            background: #0056b3;
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
         }
 
         pre {
             background: #111;
             color: #0f0;
             padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
+            border-radius: 5px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="card">
-    <h1>📊 SME AI SaaS Dashboard</h1>
-    <p>Upload CSV or enter business data for AI-powered health analysis</p>
-</div>
+<h1>📊 SME AI SaaS Dashboard</h1>
 
 <div class="card">
     <h3>📁 Upload Financial CSV</h3>
@@ -66,10 +52,8 @@
 
 <div class="card">
     <h3>🏢 Business Quick Input</h3>
-
-    <input id="name" placeholder="Business Name">
-    <input id="revenue" type="number" placeholder="Monthly Revenue">
-    <input id="expense" type="number" placeholder="Monthly Expenses">
+    <input type="text" id="businessName" placeholder="Business Name">
+    <input type="text" id="industry" placeholder="Industry">
 </div>
 
 <div class="card">
@@ -84,38 +68,34 @@
 <div class="card">
     <h3>📩 Full Report / Billing</h3>
     <p>For enterprise AI report and full SaaS access:</p>
-
-    <button onclick="window.location.href='mailto:donweerasekera@gmail.com?subject=SME%20AI%20Full%20Report%20Request'">
-        Contact for Billing
-    </button>
+    <strong>Contact for Billing</strong>
 </div>
 
 <script>
 function runAnalysis() {
+    const file = document.getElementById("fileInput").files[0];
+    const business = document.getElementById("businessName").value;
+    const industry = document.getElementById("industry").value;
 
-    const file = document.getElementById('fileInput').files[0];
+    if (!file && !business) {
+        alert("Please upload CSV or enter business data");
+        return;
+    }
 
-    const name = document.getElementById('name').value;
-    const revenue = Number(document.getElementById('revenue').value);
-    const expense = Number(document.getElementById('expense').value);
+    document.getElementById("output").innerText =
+        "Processing via Sextant AI Engine...\n\nStatus: Sent to backend\nNext: Connect GitHub Actions trigger";
 
-    let net = revenue - expense;
-
-    let risk = "LOW";
-    if (net < 0) risk = "HIGH";
-    else if (expense > revenue * 0.7) risk = "MEDIUM";
-
-    const result = {
-        business: name || "Unknown",
-        net_cashflow: net,
-        risk_level: risk,
-        file_uploaded: file ? file.name : "No file",
-        engine: "Sextant AI Engine (MVP Mode)",
-        status: "processed successfully"
-    };
-
-    document.getElementById('output').innerText =
-        JSON.stringify(result, null, 2);
+    // TEMP SIMULATION (no backend connected yet)
+    setTimeout(() => {
+        document.getElementById("output").innerText =
+            JSON.stringify({
+                status: "processed",
+                business: business,
+                industry: industry,
+                message: "Ready for engine integration",
+                next_step: "Connect to GitHub Actions API trigger"
+            }, null, 2);
+    }, 2000);
 }
 </script>
 
