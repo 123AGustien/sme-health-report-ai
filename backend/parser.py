@@ -1,64 +1,23 @@
-from datetime import datetime
+import pandas as pd
 
-def generate_report(ai_result, df):
-    """
-    Converts AI engine output into a structured SaaS business report.
-    This is what your dashboard or future PDF/email system will use.
-    """
+def parse_csv(file):
+    df = pd.read_csv(file)
 
-    # =========================
-    # BASIC INFO
-    # =========================
-    report = {
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "total_transactions": len(df),
+    # required columns
+    required = ["date", "description", "amount", "type"]
 
-        # =========================
-        # FINANCIAL SUMMARY
-        # =========================
-        "financial_summary": {
-            "income": ai_result["total_income"],
-            "expense": ai_result["total_expense"],
-            "net_cashflow": ai_result["net_cashflow"]
-        },
+    for col in required:
+        if col not in df.columns:
+            raise ValueError(f"Missing column: {col}")
 
-        # =========================
-        # AI INSIGHTS
-        # =========================
-        "ai_insight": {
-            "risk_level": ai_result["risk_level"],
-            "summary": ai_result["ai_summary"]
-        },
+    # clean data
+    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+    df = df.dropna(subset=["amount"])
 
-        # =========================
-        # DETAIL INSIGHT
-        # =========================
-        "key_insights": []
-    }
+    df["type"] = df["type"].astype(str).str.lower().str.strip()
 
-    # =========================
-    # ADD INSIGHTS
-    # =========================
-    if ai_result["biggest_expense"]:
-        report["key_insights"].append({
-            "type": "biggest_expense",
-            "data": ai_result["biggest_expense"]
-        })
+    df = df[df["type"].isin(["income", "expense"])]
 
-    # =========================
-    # HEALTH SCORE (SIMPLE SaaS METRIC)
-    # =========================
-    net = ai_result["net_cashflow"]
+    df["description"] = df["description"].astype(str).str.strip()
 
-    if net > 5000:
-        health_score = "EXCELLENT"
-    elif net > 0:
-        health_score = "GOOD"
-    elif net == 0:
-        health_score = "STABLE"
-    else:
-        health_score = "CRITICAL"
-
-    report["business_health"] = health_score
-
-    return report
+    return df
