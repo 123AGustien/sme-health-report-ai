@@ -5,7 +5,7 @@ from backend.parser import parse_csv
 from backend.ai_engine import analyze_finances
 from backend.report_generator import generate_report
 
-app = FastAPI(title="SME AI SaaS v4 (FastAPI)")
+app = FastAPI(title="SME AI SaaS v4")
 
 # =========================
 # HEALTH CHECK
@@ -14,27 +14,45 @@ app = FastAPI(title="SME AI SaaS v4 (FastAPI)")
 def home():
     return {
         "status": "SME AI FastAPI running",
-        "version": "v4"
+        "version": "v4",
+        "docs": "/docs"
     }
 
+
 # =========================
-# UPLOAD CSV + FULL PIPELINE
+# UPLOAD CSV + FULL SAAS PIPELINE
 # =========================
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
-    # 1. LOAD CSV
-    df = parse_csv(file.file)
+    try:
+        # =========================
+        # 1. PARSE CSV (CLEAN DATA)
+        # =========================
+        df = parse_csv(file.file)
 
-    # 2. AI ANALYSIS
-    ai_result = analyze_finances(df)
+        # =========================
+        # 2. AI FINANCIAL ENGINE
+        # =========================
+        ai_result = analyze_finances(df)
 
-    # 3. REPORT GENERATION
-    report = generate_report(ai_result, df)
+        # =========================
+        # 3. REPORT GENERATOR
+        # =========================
+        report = generate_report(ai_result, df)
 
-    # FINAL RESPONSE
-    return {
-        "status": "success",
-        "ai_result": ai_result,
-        "report": report
-    }
+        # =========================
+        # FINAL RESPONSE (SAAS API)
+        # =========================
+        return {
+            "status": "success",
+            "rows": len(df),
+            "ai_result": ai_result,
+            "report": report
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
