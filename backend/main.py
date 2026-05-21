@@ -1,58 +1,52 @@
-from fastapi import FastAPI, UploadFile, File
-import pandas as pd
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from backend.parser import parse_csv
-from backend.ai_engine import analyze_finances
-from backend.report_generator import generate_report
+app = FastAPI()
 
-app = FastAPI(title="SME AI SaaS v4")
+# allow GitHub Pages to connect
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# =========================
-# HEALTH CHECK
-# =========================
-@app.get("/")
-def home():
+class BusinessInput(BaseModel):
+    business_name: str
+    industry: str
+    country: str
+    size: str
+    revenue: float
+    expense: float
+    cash: float
+    risk: str
+    goal: str
+
+
+def sextant_engine(data):
+    net = data.revenue - data.expense
+
+    risk = "LOW"
+    if net < 0:
+        risk = "HIGH"
+    elif data.expense > data.revenue * 0.7:
+        risk = "MEDIUM"
+
     return {
-        "status": "SME AI FastAPI running",
-        "version": "v4",
-        "docs": "/docs"
+        "business": data.business_name,
+        "net_cashflow": net,
+        "risk": risk,
+        "message": "Processed by Sextant Engine"
     }
 
 
-# =========================
-# UPLOAD CSV + FULL SAAS PIPELINE
-# =========================
-@app.post("/upload")
-async def upload(file: UploadFile = File(...)):
+@app.post("/analyze")
+def analyze(data: BusinessInput):
+    return sextant_engine(data)
 
-    try:
-        # =========================
-        # 1. PARSE CSV (CLEAN DATA)
-        # =========================
-        df = parse_csv(file.file)
 
-        # =========================
-        # 2. AI FINANCIAL ENGINE
-        # =========================
-        ai_result = analyze_finances(df)
-
-        # =========================
-        # 3. REPORT GENERATOR
-        # =========================
-        report = generate_report(ai_result, df)
-
-        # =========================
-        # FINAL RESPONSE (SAAS API)
-        # =========================
-        return {
-            "status": "success",
-            "rows": len(df),
-            "ai_result": ai_result,
-            "report": report
-        }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
+@app.get("/health")
+def health():
+    return {"status": "online"}
