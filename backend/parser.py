@@ -1,45 +1,64 @@
-import pandas as pd
+from datetime import datetime
 
-def parse_csv(file):
+def generate_report(ai_result, df):
     """
-    SaaS-safe CSV parser for SME AI system.
-    Cleans and validates financial data before AI processing.
+    Converts AI engine output into a structured SaaS business report.
+    This is what your dashboard or future PDF/email system will use.
     """
 
     # =========================
-    # LOAD CSV
+    # BASIC INFO
     # =========================
-    df = pd.read_csv(file)
+    report = {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "total_transactions": len(df),
+
+        # =========================
+        # FINANCIAL SUMMARY
+        # =========================
+        "financial_summary": {
+            "income": ai_result["total_income"],
+            "expense": ai_result["total_expense"],
+            "net_cashflow": ai_result["net_cashflow"]
+        },
+
+        # =========================
+        # AI INSIGHTS
+        # =========================
+        "ai_insight": {
+            "risk_level": ai_result["risk_level"],
+            "summary": ai_result["ai_summary"]
+        },
+
+        # =========================
+        # DETAIL INSIGHT
+        # =========================
+        "key_insights": []
+    }
 
     # =========================
-    # REQUIRED COLUMNS CHECK
+    # ADD INSIGHTS
     # =========================
-    required_columns = ["date", "description", "amount", "type"]
-
-    for col in required_columns:
-        if col not in df.columns:
-            raise ValueError(f"Missing required column: {col}")
-
-    # =========================
-    # CLEAN DATA
-    # =========================
-    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
-    df = df.dropna(subset=["amount"])
-
-    df["type"] = df["type"].astype(str).str.lower().str.strip()
+    if ai_result["biggest_expense"]:
+        report["key_insights"].append({
+            "type": "biggest_expense",
+            "data": ai_result["biggest_expense"]
+        })
 
     # =========================
-    # VALIDATE TYPE VALUES
+    # HEALTH SCORE (SIMPLE SaaS METRIC)
     # =========================
-    valid_types = ["income", "expense"]
-    df = df[df["type"].isin(valid_types)]
+    net = ai_result["net_cashflow"]
 
-    # =========================
-    # CLEAN TEXT FIELDS
-    # =========================
-    df["description"] = df["description"].astype(str).str.strip()
+    if net > 5000:
+        health_score = "EXCELLENT"
+    elif net > 0:
+        health_score = "GOOD"
+    elif net == 0:
+        health_score = "STABLE"
+    else:
+        health_score = "CRITICAL"
 
-    # =========================
-    # RETURN CLEAN DATAFRAME
-    # =========================
-    return df
+    report["business_health"] = health_score
+
+    return report
