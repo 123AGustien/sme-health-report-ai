@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SME AI SaaS Dashboard</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+
+    <h1>📊 SME AI SaaS Dashboard</h1>
+
+    <p>Upload CSV file to analyze business health</p>
+
+    <input type="file" id="fileInput" />
+    <br><br>
+
+    <button onclick="uploadFile()">Run Analysis</button>
+
+    <h3>Result:</h3>
+    <pre id="output">Waiting for upload...</pre>
+
+    <script>
+        async function uploadFile() {
+            const file = document.getElementById('fileInput').files[0];
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // IMPORTANT: replace this later with deployed backend URL
+            const response = await fetch("http://127.0.0.1:8000/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            document.getElementById('output').innerText =
+                JSON.stringify(data, null, 2);
+        }
+    </script>
+
+</body>
+</html>
