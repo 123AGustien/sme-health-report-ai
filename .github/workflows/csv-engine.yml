@@ -1,41 +1,137 @@
-name: Sextant CSV Engine
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SME AI SaaS Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f5f5f5;
+        }
 
-on:
-  workflow_dispatch:
-    inputs:
-      file:
-        description: "CSV file name in repo"
-        required: true
-        default: sample.csv
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+        }
 
-jobs:
-  run-engine:
-    runs-on: ubuntu-latest
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+        }
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+        pre {
+            background: #111;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas
+<body>
 
-      - name: Run Sextant Engine
-        run: |
-          python backend/ai_engine.py "${{ github.event.inputs.file }}"
+<h1>📊 SME AI SaaS Dashboard</h1>
 
-      - name: Check output files
-        run: |
-          ls -R
+<div class="card">
+    <h3>📁 Upload Financial CSV</h3>
+    <input type="file" id="fileInput">
+</div>
 
-      - name: Upload Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: sme-business-report
-          path: backend/report.json
+<div class="card">
+    <h3>🏢 Business Quick Input</h3>
+    <input type="text" id="businessName" placeholder="Business Name">
+    <input type="text" id="industry" placeholder="Industry">
+</div>
+
+<div class="card">
+    <button onclick="runAnalysis()">🚀 Run AI Analysis</button>
+</div>
+
+<div class="card">
+    <h3>📊 Result Output</h3>
+
+    <pre id="output">Waiting for analysis...</pre>
+
+    <br>
+
+    <button onclick="downloadReport()">
+        📥 Download Report
+    </button>
+</div>
+
+<div class="card">
+    <h3>📩 Full Report / Billing</h3>
+    <p>For enterprise AI report and full SaaS access:</p>
+    <strong>Contact for Billing</strong>
+</div>
+
+<script>
+function runAnalysis() {
+
+    const file = document.getElementById("fileInput").files[0];
+    const business = document.getElementById("businessName").value;
+    const industry = document.getElementById("industry").value;
+
+    if (!file && !business) {
+        alert("Please upload CSV or enter business data");
+        return;
+    }
+
+    document.getElementById("output").innerText =
+        "Processing via Sextant AI Engine...\n\nStatus: Running simulation";
+
+    // OFFLINE SIMULATION (no backend)
+    setTimeout(() => {
+
+        const report = {
+            status: "offline simulation",
+            business: business,
+            industry: industry,
+            rows: 3,
+            total_revenue: 4500,
+            total_expense: 2000,
+            net_cashflow: 2500,
+            risk_level: "LOW"
+        };
+
+        document.getElementById("output").innerText =
+            JSON.stringify(report, null, 2);
+
+    }, 1500);
+}
+
+function downloadReport() {
+
+    const reportText =
+        document.getElementById("output").innerText;
+
+    const blob = new Blob(
+        [reportText],
+        { type: "application/json" }
+    );
+
+    const link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+
+    link.download = "report.json";
+
+    link.click();
+}
+</script>
+
+</body>
+</html>
