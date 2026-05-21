@@ -73,6 +73,7 @@
 
 <script>
 function runAnalysis() {
+
     const file = document.getElementById("fileInput").files[0];
     const business = document.getElementById("businessName").value;
     const industry = document.getElementById("industry").value;
@@ -83,19 +84,26 @@ function runAnalysis() {
     }
 
     document.getElementById("output").innerText =
-        "Processing via Sextant AI Engine...\n\nStatus: Sent to backend\nNext: Connect GitHub Actions trigger";
+        "Processing via Sextant AI Engine...\n\nStatus: Running simulation";
 
-    // TEMP SIMULATION (no backend connected yet)
+    // OFFLINE SIMULATION (no backend)
     setTimeout(() => {
+
+        const report = {
+            status: "offline simulation",
+            business: business,
+            industry: industry,
+            rows: 3,
+            total_revenue: 4500,
+            total_expense: 2000,
+            net_cashflow: 2500,
+            risk_level: "LOW"
+        };
+
         document.getElementById("output").innerText =
-            JSON.stringify({
-                status: "processed",
-                business: business,
-                industry: industry,
-                message: "Ready for engine integration",
-                next_step: "Connect to GitHub Actions API trigger"
-            }, null, 2);
-    }, 2000);
+            JSON.stringify(report, null, 2);
+
+    }, 1500);
 }
 </script>
 
