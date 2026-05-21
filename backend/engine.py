@@ -1,72 +1,37 @@
-import pandas as pd
-import sys
-import json
-import os
+name: Sextant AI CSV Engine
 
-# Optional OpenAI (safe fallback if no key)
-try:
-    from openai import OpenAI
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    USE_AI = True
-except:
-    USE_AI = False
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "CSV file name in repo"
+        required: true
 
+jobs:
+  run-engine:
+    runs-on: ubuntu-latest
 
-file = sys.argv[1]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-df = pd.read_csv(file)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-revenue = df["revenue"].sum() if "revenue" in df else 0
-expense = df["expense"].sum() if "expense" in df else 0
+      - name: Install dependencies
+        run: |
+          pip install pandas openai
 
-net = revenue - expense
+      - name: Run Sextant Engine
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python backend/engine.py "${{ github.event.inputs.file }}"
 
-risk = "LOW"
-if net < 0:
-    risk = "HIGH"
-elif expense > revenue * 0.7:
-    risk = "MEDIUM"
-
-
-# ---------------------------
-# OPENAI INSIGHT LAYER
-# ---------------------------
-ai_insight = "AI not enabled"
-
-if USE_AI:
-    prompt = f"""
-    Analyze this SME financial data:
-    Revenue: {revenue}
-    Expense: {expense}
-    Net: {net}
-    Risk: {risk}
-
-    Give a short business insight and recommendation.
-    """
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    ai_insight = response.choices[0].message.content
-
-
-# ---------------------------
-# FINAL REPORT
-# ---------------------------
-report = {
-    "rows": len(df),
-    "total_revenue": float(revenue),
-    "total_expense": float(expense),
-    "net_cashflow": float(net),
-    "risk_level": risk,
-    "ai_insight": ai_insight,
-    "status": "processed via Sextant Engine"
-}
-
-# Save output file
-with open("report.json", "w") as f:
-    json.dump(report, f, indent=2)
-
-print(json.dumps(report, indent=2))
+      - name: Upload Report (Downloadable Output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sme-business-report
+          path: report.json
