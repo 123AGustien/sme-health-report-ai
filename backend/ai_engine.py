@@ -1,47 +1,33 @@
-name: Sextant AI CSV Engine
+import pandas as pd
+import json
+import sys
 
-on:
-  workflow_dispatch:
-    inputs:
-      file:
-        description: "CSV file name in repo"
-        required: true
+def analyze_finances(file_path):
+    # Load CSV
+    df = pd.read_csv(file_path)
 
-jobs:
-  run-engine:
-    runs-on: ubuntu-latest
+    # Basic analysis (safe + stable MVP)
+    analysis = {
+        "status": "success",
+        "rows": int(len(df)),
+        "columns": list(df.columns),
+        "missing_values": int(df.isnull().sum().sum()),
+        "summary": df.describe(include="all").to_dict()
+    }
 
-    steps:
-      # 1. Checkout repo
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    # Save report
+    output_path = "backend/report.json"
+    with open(output_path, "w") as f:
+        json.dump(analysis, f, indent=2)
 
-      # 2. Setup Python
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+    return analysis
 
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: |
-          pip install pandas openai
 
-      # 4. Run engine
-      - name: Run Sextant Engine
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          python backend/engine.py "${{ github.event.inputs.file }}"
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("ERROR: No CSV file provided")
+        sys.exit(1)
 
-      # 5. DEBUG STEP (VERY IMPORTANT)
-      - name: Check output files
-        run: |
-          ls -R
-
-      # 6. Upload report
-      - name: Upload Report (Downloadable Output)
-        uses: actions/upload-artifact@v4
-        with:
-          name: sme-business-report
-          path: backend/report.json
+    file_path = sys.argv[1]
+    analyze_finances(file_path)
+    print("Report generated successfully")
