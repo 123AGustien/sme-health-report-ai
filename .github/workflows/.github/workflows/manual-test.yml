@@ -1,0 +1,33 @@
+name: Manual SaaS Test Pipeline
+
+on:
+  workflow_dispatch:   # 👈 THIS enables manual button trigger
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install fastapi uvicorn pandas
+
+      - name: Run basic import test
+        run: |
+          python -c "import backend.main; print('Backend loaded successfully')"
+
+      - name: Run AI engine test
+        run: |
+          python -c "from backend.ai_engine import analyze_finances; print('AI engine OK')"
+
+      - name: Run parser test
+        run: |
+          python -c "from backend.parser import parse_csv; print('Parser OK')"
