@@ -1,68 +1,47 @@
-import pandas as pd
+name: Sextant AI CSV Engine
 
-def analyze_finances(df):
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "CSV file name in repo"
+        required: true
 
-    # =========================
-    # CLEAN NUMERIC DATA
-    # =========================
-    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
-    df["amount"] = df["amount"].fillna(0)
+jobs:
+  run-engine:
+    runs-on: ubuntu-latest
 
-    # =========================
-    # CORE METRICS
-    # =========================
-    income = df[df["type"] == "income"]["amount"].sum()
+    steps:
+      # 1. Checkout repo
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    expense = df[df["type"] == "expense"]["amount"].sum()
+      # 2. Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    net = income + expense
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install pandas openai
 
-    # =========================
-    # RISK ENGINE
-    # =========================
-    if net < 0:
-        risk = "HIGH"
+      # 4. Run engine
+      - name: Run Sextant Engine
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python backend/engine.py "${{ github.event.inputs.file }}"
 
-    elif expense > income * 0.7:
-        risk = "MEDIUM"
+      # 5. DEBUG STEP (VERY IMPORTANT)
+      - name: Check output files
+        run: |
+          ls -R
 
-    else:
-        risk = "LOW"
-
-    # =========================
-    # AI SUMMARY ENGINE
-    # =========================
-    if net > 0:
-        summary = "Your business is profitable. Cashflow is positive."
-
-    elif net == 0:
-        summary = "Your business is breaking even. No profit detected."
-
-    else:
-        summary = "Your business is losing money. Expenses exceed income."
-
-    # =========================
-    # BIGGEST EXPENSE
-    # =========================
-    expense_df = df[df["type"] == "expense"].sort_values("amount")
-
-    biggest_expense = []
-
-    if not expense_df.empty:
-        biggest_expense = expense_df.head(1).to_dict(orient="records")
-
-    # =========================
-    # FINAL SAAS RESPONSE
-    # =========================
-    return {
-        "rows": int(len(df)),
-
-        "total_income": float(income),
-        "total_expense": float(expense),
-        "net_cashflow": float(net),
-
-        "risk_level": risk,
-        "ai_summary": summary,
-
-        "biggest_expense": biggest_expense
-    }
+      # 6. Upload report
+      - name: Upload Report (Downloadable Output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sme-business-report
+          path: backend/report.json
