@@ -1,7 +1,9 @@
-# trigger refresh
-name: Manual SaaS Test Pipeline
+name: SaaS Backend CI Pipeline
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -18,7 +20,17 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install fastapi pandas
+        run: |
+          pip install pandas
 
-      - name: Run backend test
-        run: python -c "print('Workflow is working')"
+      - name: Run backend sanity test
+        run: |
+          python -c "from backend.ai_engine import analyze_finances; print('AI engine OK')"
+
+      - name: Run parser test
+        run: |
+          python -c "from backend.parser import parse_csv; print('Parser OK')"
+
+      - name: Run report test
+        run: |
+          python -c "from backend.report_generator import generate_report; print('Report engine OK')"
