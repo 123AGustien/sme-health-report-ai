@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>SME AI SaaS Dashboard</title>
+
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             padding: 20px;
             background: #f5f5f5;
+        }
+
+        h1 {
+            margin-bottom: 20px;
         }
 
         .card {
@@ -14,7 +20,14 @@
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        input {
+            padding: 10px;
+            margin: 8px 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button {
@@ -26,17 +39,12 @@
             border-radius: 5px;
         }
 
-        input {
-            padding: 8px;
-            margin: 5px 0;
-            width: 100%;
-        }
-
         pre {
             background: #111;
             color: #0f0;
             padding: 15px;
             border-radius: 5px;
+            overflow-x: auto;
         }
     </style>
 </head>
@@ -45,32 +53,38 @@
 
 <h1>📊 SME AI SaaS Dashboard</h1>
 
+<!-- FILE UPLOAD -->
 <div class="card">
     <h3>📁 Upload Financial CSV</h3>
     <input type="file" id="fileInput">
 </div>
 
+<!-- BUSINESS INPUT -->
 <div class="card">
     <h3>🏢 Business Quick Input</h3>
     <input type="text" id="businessName" placeholder="Business Name">
     <input type="text" id="industry" placeholder="Industry">
 </div>
 
+<!-- RUN BUTTON -->
 <div class="card">
     <button onclick="runAnalysis()">🚀 Run AI Analysis</button>
 </div>
 
+<!-- OUTPUT -->
 <div class="card">
     <h3>📊 Result Output</h3>
     <pre id="output">Waiting for analysis...</pre>
 </div>
 
+<!-- BILLING SECTION -->
 <div class="card">
     <h3>📩 Full Report / Billing</h3>
     <p>For enterprise AI report and full SaaS access:</p>
     <strong>Contact for Billing</strong>
 </div>
 
+<!-- SCRIPT -->
 <script>
 function runAnalysis() {
 
@@ -84,15 +98,14 @@ function runAnalysis() {
     }
 
     document.getElementById("output").innerText =
-        "Processing via Sextant AI Engine...\n\nStatus: Running simulation";
+        "Processing via Sextant AI Engine...\n\nRunning offline simulation...";
 
-    // OFFLINE SIMULATION (no backend)
     setTimeout(() => {
 
         const report = {
             status: "offline simulation",
-            business: business,
-            industry: industry,
+            business: business || "N/A",
+            industry: industry || "N/A",
             rows: 3,
             total_revenue: 4500,
             total_expense: 2000,
@@ -103,7 +116,7 @@ function runAnalysis() {
         document.getElementById("output").innerText =
             JSON.stringify(report, null, 2);
 
-    }, 1500);
+    }, 1200);
 }
 </script>
 
