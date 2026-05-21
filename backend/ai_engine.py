@@ -1,43 +1,52 @@
-import os
-from openai import OpenAI
+def analyze_finances(df):
+    # ensure numeric safety
+    df["amount"] = df["amount"].fillna(0)
 
-# Load API key securely from environment variable
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+    # =========================
+    # CORE METRICS
+    # =========================
+    income = df[df["type"] == "income"]["amount"].sum()
+    expense = df[df["type"] == "expense"]["amount"].sum()
+    net = income + expense
 
-def generate_insights(df):
-    """
-    Uses GPT to generate SME business insights
-    """
+    # =========================
+    # RISK ENGINE
+    # =========================
+    if net < 0:
+        risk = "HIGH"
+    elif expense > income * 0.7:
+        risk = "MEDIUM"
+    else:
+        risk = "LOW"
 
-    # Convert first rows into readable text
-    data_preview = df.head(10).to_string()
+    # =========================
+    # AI SUMMARY ENGINE
+    # =========================
+    if net > 0:
+        summary = "Your business is profitable. Cashflow is positive."
+    elif net == 0:
+        summary = "Your business is breaking even. No profit detected."
+    else:
+        summary = "Your business is losing money. Expenses exceed income."
 
-    prompt = f"""
-    You are an SME financial advisor.
+    # =========================
+    # INSIGHT ENGINE
+    # =========================
+    expense_df = df[df["type"] == "expense"].sort_values("amount")
 
-    Analyze this business transaction data and provide:
+    biggest_expense = None
+    if not expense_df.empty:
+        biggest_expense = expense_df.head(1).to_dict(orient="records")
 
-    1. Cashflow observations
-    2. Risks
-    3. Recommendations
-    4. Weekly business health summary
-
-    Data:
-    {data_preview}
-    """
-
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    insights = response.choices[0].message.content
-
-    return insights
+    # =========================
+    # OUTPUT (SaaS API FORMAT)
+    # =========================
+    return {
+        "total_income": float(income),
+        "total_expense": float(expense),
+        "net_cashflow": float(net),
+        "risk_level": risk,
+        "ai_summary": summary,
+        "biggest_expense": biggest_expense,
+        "rows": len(df)
+    }
