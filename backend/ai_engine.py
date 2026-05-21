@@ -1,12 +1,11 @@
 import pandas as pd
 import json
 import sys
+import os
 
 def analyze_finances(file_path):
-    # Load CSV
     df = pd.read_csv(file_path)
 
-    # Basic analysis (safe + stable MVP)
     analysis = {
         "status": "success",
         "rows": int(len(df)),
@@ -15,10 +14,14 @@ def analyze_finances(file_path):
         "summary": df.describe(include="all").to_dict()
     }
 
-    # Save report
+    # Ensure folder exists (VERY IMPORTANT in GitHub Actions)
+    os.makedirs("backend", exist_ok=True)
+
     output_path = "backend/report.json"
     with open(output_path, "w") as f:
         json.dump(analysis, f, indent=2)
+
+    print("Report generated at:", output_path)
 
     return analysis
 
@@ -28,6 +31,4 @@ if __name__ == "__main__":
         print("ERROR: No CSV file provided")
         sys.exit(1)
 
-    file_path = sys.argv[1]
-    analyze_finances(file_path)
-    print("Report generated successfully")
+    analyze_finances(sys.argv[1])
