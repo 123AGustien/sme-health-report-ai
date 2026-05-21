@@ -1,0 +1,4 @@
+date,description,amount,type
+2026-05-01,sales,5000,income
+2026-05-02,rent,-1500,expense
+2026-05-03,ads,-300,expense
