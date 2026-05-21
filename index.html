@@ -1,41 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SME AI SaaS Dashboard</title>
-</head>
-<body style="font-family: Arial; padding: 20px;">
+<script>
+async function uploadFile() {
 
-    <h1>📊 SME AI SaaS Dashboard</h1>
+    const file = document.getElementById('fileInput').files[0];
 
-    <p>Upload CSV file to analyze business health</p>
+    if (!file) {
+        alert("Please upload a file first");
+        return;
+    }
 
-    <input type="file" id="fileInput" />
-    <br><br>
+    document.getElementById('output').innerText = "Processing via Sextant Engine...";
 
-    <button onclick="uploadFile()">Run Analysis</button>
+    // Simulated SaaS output (FREE MODE)
+    const result = {
+        status: "uploaded",
+        file_name: file.name,
+        message: "Send to GitHub Actions engine (next step)",
+        next_step: "Connect workflow trigger"
+    };
 
-    <h3>Result:</h3>
-    <pre id="output">Waiting for upload...</pre>
-
-    <script>
-        async function uploadFile() {
-            const file = document.getElementById('fileInput').files[0];
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            // IMPORTANT: replace this later with deployed backend URL
-            const response = await fetch("http://127.0.0.1:8000/upload", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json();
-
-            document.getElementById('output').innerText =
-                JSON.stringify(data, null, 2);
-        }
-    </script>
-
-</body>
-</html>
+    document.getElementById('output').innerText =
+        JSON.stringify(result, null, 2);
+}
+</script>
