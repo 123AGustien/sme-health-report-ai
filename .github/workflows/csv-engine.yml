@@ -14,6 +14,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
       - name: Run CSV Engine
         run: |
           python - <<EOF
@@ -24,8 +29,8 @@ jobs:
 
           df = pd.read_csv(file)
 
-          revenue = df["revenue"].sum() if "revenue" in df else 0
-          expense = df["expense"].sum() if "expense" in df else 0
+          revenue = df["revenue"].sum() if "revenue" in df.columns else 0
+          expense = df["expense"].sum() if "expense" in df.columns else 0
 
           net = revenue - expense
 
@@ -44,5 +49,15 @@ jobs:
               "status": "processed via GitHub Actions"
           }
 
+          # SAVE REPORT FILE (IMPORTANT)
+          with open("report.json", "w") as f:
+              json.dump(report, f, indent=2)
+
           print(json.dumps(report, indent=2))
           EOF
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sextant-report
+          path: report.json
