@@ -1,40 +1,39 @@
-from fastapi import FastAPI, UploadFile, File
-from backend.parser import parse_file
-from backend.ai_engine import generate_insights
-from backend.report_generator import generate_report
+from flask import Flask, jsonify, request
+from backend.parser import parse_csv
+from backend.ai_engine import analyze_finances
 
-app = FastAPI()
+app = Flask(__name__)
 
-@app.get("/")
+app.secret_key = "sme-ai-v4-secret"
+
+# =========================
+# HOME
+# =========================
+@app.route("/")
 def home():
     return {
-        "status": "SME Health AI MVP running"
+        "status": "SME AI SaaS v4 running",
+        "message": "Upload CSV to /upload"
     }
 
-@app.post("/upload")
-async def upload(file: UploadFile = File(...)):
-    try:
-        # Read uploaded file
-        contents = await file.read()
+# =========================
+# UPLOAD CSV
+# =========================
+@app.route("/upload", methods=["POST"])
+def upload():
+    file = request.files.get("file")
 
-        # Parse Excel data
-        df = parse_file(contents)
+    if not file:
+        return jsonify({"error": "No file uploaded"}), 400
 
-        # Generate business insights
-        insights = generate_insights(df)
+    df = parse_csv(file)
+    result = analyze_finances(df)
 
-        # Generate formatted report
-        report = generate_report(insights)
+    return jsonify(result)
 
-        return {
-            "status": "success",
-            "rows_processed": len(df),
-            "columns": list(df.columns),
-            "report": report
-        }
 
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
+# =========================
+# RUN SERVER
+# =========================
+if __name__ == "__main__":
+    app.run(debug=True)
