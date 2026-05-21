@@ -30,7 +30,7 @@ jobs:
         run: |
           python backend/engine.py "${{ github.event.inputs.file }}"
 
-- name: Upload Report (Downloadable Output)
+      - name: Upload Report (Downloadable Output)
         uses: actions/upload-artifact@v4
         with:
           name: sme-business-report
