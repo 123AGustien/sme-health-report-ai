@@ -2,4 +2,4 @@
 
 Status: waiting
 
-This file will be overwritten by the Sextant AI engine during GitHub Actions run.
+This report will be generated automatically by Sextant AI engine during GitHub Actions run.
